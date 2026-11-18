@@ -24,7 +24,7 @@ export async function loadSettingsIntoUI() {
   if (durSelect) durSelect.value = String(settings.clipDuration || 'auto');
   if (countSelect) countSelect.value = String(settings.clipCount || 'auto');
   if (platformSelect) platformSelect.value = settings.platform || 'reels';
-  if (cropSelect) cropSelect.value = settings.cropMode || 'blur';
+  if (cropSelect) cropSelect.value = settings.cropMode || 'center';
 
   if (fontSizeInput) fontSizeInput.value = settings.captionStyle?.fontSize || 28;
   if (posSelect) posSelect.value = settings.captionStyle?.position || 'bottom';
@@ -57,7 +57,7 @@ export async function saveSettingsFromUI() {
     clipDuration: durVal,
     clipCount: countVal,
     platform: platformSelect?.value || 'reels',
-    cropMode: cropSelect?.value || 'blur',
+    cropMode: cropSelect?.value || 'center',
     captionStyle: {
       fontSize: parseInt(fontSizeInput?.value, 10) || 28,
       position: posSelect?.value || 'bottom',

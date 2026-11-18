@@ -1,5 +1,6 @@
 // AlyxCut Dedicated Video Worker
-// Offloads heavy FFmpeg operations and streams directly via WORKERFS to prevent RAM bloat
+// Offloads heavy FFmpeg operations and streams directly via WORKERFS
+// Exact 9:16 vertical Zoom-Crop filter: crop='if(gte(iw/ih,9/16),ih*9/16,iw)':'if(gte(iw/ih,9/16),ih,iw*16/9)':'(iw-ow)/2':'(ih-oh)/2',scale=1080:1920
 
 let ffmpeg = null;
 
@@ -100,9 +101,54 @@ self.onmessage = async (e) => {
         id,
         type: 'EXTRACT_SUCCESS',
         wavBytes,
-      }, [wavBytes.buffer]); // Transfer buffer without cloning
+      }, [wavBytes.buffer]);
     } catch (err) {
       console.error('Video worker audio extraction error:', err);
+      self.postMessage({ id, type: 'ERROR', error: err.message });
+    }
+  }
+
+  if (type === 'RENDER_CLIP_FFMPEG') {
+    try {
+      const ff = await loadFFmpeg();
+      const { startTime = 0, endTime = 60, cropMode = 'center' } = options;
+
+      const inputName = `source_${Date.now()}.tmp`;
+      const outputName = `clip_${Date.now()}.mp4`;
+
+      const buf = new Uint8Array(await file.arrayBuffer());
+      await ff.writeFile(inputName, buf);
+
+      // Exact 9:16 vertical zoom-crop formula:
+      // crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920 with safe aspect ratio handling
+      let vf = "crop='if(gte(iw/ih,9/16),ih*9/16,iw)':'if(gte(iw/ih,9/16),ih,iw*16/9)':'(iw-ow)/2':'(ih-oh)/2',scale=1080:1920";
+
+      if (cropMode === 'blur') {
+        vf = '[0:v]split=2[bg][fg];[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=20:5[bgblur];[fg]scale=1080:-1[fgscale];[bgblur][fgscale]overlay=(W-w)/2:(H-h)/2';
+      } else if (cropMode === 'fit') {
+        vf = 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black';
+      }
+
+      await ff.exec([
+        '-ss', String(startTime),
+        '-to', String(endTime),
+        '-i', inputName,
+        '-vf', vf,
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-c:a', 'aac',
+        '-b:a', '128k',
+        outputName,
+      ]);
+
+      const outBytes = await ff.readFile(outputName);
+
+      await ff.deleteFile(inputName);
+      await ff.deleteFile(outputName);
+
+      self.postMessage({ id, type: 'RENDER_SUCCESS', outBytes }, [outBytes.buffer]);
+    } catch (err) {
+      console.error('Video worker render clip error:', err);
       self.postMessage({ id, type: 'ERROR', error: err.message });
     }
   }

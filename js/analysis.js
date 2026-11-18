@@ -314,31 +314,46 @@ export function generateCandidateClips(chunks, totalDuration, options = {}) {
     return generateFallbackClips(totalDuration, targetDuration, clipCount, visualData);
   }
 
-  // Determine ideal duration window in seconds
-  let minDuration = 15;
-  let maxDuration = 45;
-  let nominalDuration = 30;
+  // Strict Shorts/Reels Standard: 45s to 90s max (1 to 1.5 minutes)
+  const HARD_MAX_DURATION = 90;
 
-  if (targetDuration === 15) {
-    minDuration = 12;
-    maxDuration = 20;
-    nominalDuration = 15;
-  } else if (targetDuration === 30) {
-    minDuration = 22;
-    maxDuration = 36;
-    nominalDuration = 30;
-  } else if (targetDuration === 45) {
-    minDuration = 35;
-    maxDuration = 52;
+  let minDuration = 45;
+  let maxDuration = 90;
+  let nominalDuration = 60;
+
+  if (targetDuration === 45) {
+    minDuration = 40;
+    maxDuration = 55;
     nominalDuration = 45;
   } else if (targetDuration === 60) {
-    minDuration = 45;
-    maxDuration = 65;
+    minDuration = 50;
+    maxDuration = 70;
     nominalDuration = 60;
+  } else if (targetDuration === 75) {
+    minDuration = 65;
+    maxDuration = 85;
+    nominalDuration = 75;
+  } else if (targetDuration === 90) {
+    minDuration = 75;
+    maxDuration = 90;
+    nominalDuration = 90;
   } else if (typeof targetDuration === 'number') {
-    minDuration = Math.max(10, targetDuration - 5);
-    maxDuration = targetDuration + 10;
-    nominalDuration = targetDuration;
+    minDuration = Math.max(30, targetDuration - 10);
+    maxDuration = Math.min(HARD_MAX_DURATION, targetDuration + 10);
+    nominalDuration = Math.min(HARD_MAX_DURATION, targetDuration);
+  } else {
+    // Default 'auto': strictly 45s to 90s (1 to 1.5 min max)
+    minDuration = 45;
+    maxDuration = 90;
+    nominalDuration = 60;
+  }
+
+  // Gracefully adapt for short test videos
+  if (totalDuration < minDuration) {
+    minDuration = Math.max(5, Math.floor(totalDuration * 0.4));
+    maxDuration = Math.min(HARD_MAX_DURATION, totalDuration);
+  } else {
+    maxDuration = Math.min(HARD_MAX_DURATION, maxDuration);
   }
 
   const candidates = [];
@@ -348,11 +363,16 @@ export function generateCandidateClips(chunks, totalDuration, options = {}) {
     const startChunk = chunks[i];
     const startTime = Math.max(0, startChunk.start);
 
-    // Look for natural end chunk within target duration range
+    // Look for natural end chunk within target duration range (45s–90s)
     for (let j = i; j < chunks.length; j++) {
       const endChunk = chunks[j];
       const endTime = Math.min(totalDuration, endChunk.end);
       const currentDuration = endTime - startTime;
+
+      // Strict enforcement: Never exceed 90 seconds (Reels & Shorts limit)
+      if (currentDuration > HARD_MAX_DURATION) {
+        break; // Stops extending; clip ends at the nearest complete sentence before 90s
+      }
 
       if (currentDuration >= minDuration && currentDuration <= maxDuration) {
         const candidateChunks = chunks.slice(i, j + 1);
@@ -422,16 +442,18 @@ export function generateCandidateClips(chunks, totalDuration, options = {}) {
  * Fallback clip generator when no spoken dialogue is detected
  */
 function generateFallbackClips(totalDuration, targetDuration, clipCount, visualData = []) {
-  const duration = targetDuration === 15 ? 15 : targetDuration === 45 ? 45 : targetDuration === 60 ? 60 : 30;
-  let count = clipCount === 'auto' ? Math.max(1, Math.min(5, Math.floor(totalDuration / duration))) : Number(clipCount) || 3;
+  const defaultDur = targetDuration === 45 ? 45 : targetDuration === 90 ? 90 : targetDuration === 75 ? 75 : 60;
+  const duration = Math.min(90, Math.max(15, typeof targetDuration === 'number' ? targetDuration : defaultDur));
+  const effectiveDur = Math.min(duration, totalDuration);
+  let count = clipCount === 'auto' ? Math.max(1, Math.min(5, Math.floor(totalDuration / effectiveDur))) : Number(clipCount) || 3;
 
   const clips = [];
   const interval = totalDuration / (count + 1);
 
   for (let i = 1; i <= count; i++) {
     const center = i * interval;
-    const start = Math.max(0, center - duration / 2);
-    const end = Math.min(totalDuration, start + duration);
+    const start = Math.max(0, center - effectiveDur / 2);
+    const end = Math.min(totalDuration, start + effectiveDur);
 
     clips.push({
       id: `clip_${Date.now()}_${i}`,

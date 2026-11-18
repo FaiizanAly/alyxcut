@@ -205,13 +205,13 @@
               <div class="form-group">
                 <label for="setting-clip-dur">Clip Duration</label>
                 <select class="form-select" id="setting-clip-dur">
-                  <option value="auto" selected>Automatic (AI selects best length)</option>
-                  <option value="15">15 Seconds (Quick Hook)</option>
-                  <option value="30">30 Seconds (Standard Reel)</option>
-                  <option value="45">45 Seconds (Deep Dive)</option>
-                  <option value="60">60 Seconds (Full Short)</option>
+                  <option value="auto" selected>60–90s Auto (Shorts & Reels Standard — 1 to 1.5 min)</option>
+                  <option value="60">60 Seconds (Shorts Standard)</option>
+                  <option value="75">75 Seconds (Extended Reel)</option>
+                  <option value="90">90 Seconds (Maximum Reel Limit)</option>
+                  <option value="45">45 Seconds (Punchy Hook)</option>
                 </select>
-                <span class="form-hint">Clips snap to natural sentence boundaries</span>
+                <span class="form-hint">Strictly 45s–90s max; snaps to natural sentence ends</span>
               </div>
 
               <div class="form-group">
@@ -237,11 +237,11 @@
               <div class="form-group">
                 <label for="setting-crop-mode">Crop & Background Style</label>
                 <select class="form-select" id="setting-crop-mode">
-                  <option value="blur" selected>Blurred Background 9:16 (Recommended)</option>
-                  <option value="center">Smart Center / Face Crop 9:16</option>
+                  <option value="center" selected>9:16 Center Zoom-Crop (Full Screen, No Black Bars) — Default</option>
+                  <option value="blur">Blurred Background 9:16 (Preserve Full Width)</option>
                   <option value="fit">Fit with Letterbox Borders</option>
                 </select>
-                <span class="form-hint">Prevents unnatural video stretching</span>
+                <span class="form-hint">Zero black bars on default 9:16 Zoom-Crop</span>
               </div>
 
             </div>
@@ -513,8 +513,8 @@
             <div class="form-group">
               <label for="edit-clip-crop">Crop & Layout</label>
               <select class="form-select" id="edit-clip-crop">
+                <option value="center" selected>9:16 Center Zoom-Crop (Zero Black Bars) — Default</option>
                 <option value="blur">Blurred Background 9:16</option>
-                <option value="center">Smart Center Crop 9:16</option>
                 <option value="fit">Fit with Borders</option>
               </select>
             </div>

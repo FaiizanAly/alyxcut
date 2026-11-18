@@ -8,14 +8,14 @@ const STORE_SETTINGS = 'settings';
 
 export const DEFAULT_SETTINGS = {
   captionLanguage: 'hinglish', // 'hinglish' (default) | 'hindi' | 'english'
-  clipDuration: 'auto',        // 'auto' | 15 | 30 | 45 | 60 | custom
-  customDuration: 30,
+  clipDuration: 'auto',        // 'auto' (60s–90s Shorts Standard) | 45 | 60 | 75 | 90 | custom
+  customDuration: 60,
   clipCount: 'auto',           // 'auto' | 5 | 10 | 15 | custom
   customCount: 5,
   platform: 'reels',           // 'reels' | 'shorts'
-  cropMode: 'blur',            // 'blur' | 'center' | 'fit'
+  cropMode: 'center',          // 'center' (9:16 Center Zoom-Crop - Default) | 'blur' | 'fit'
   captionStyle: {
-    fontSize: 28,
+    fontSize: 32,
     fontFamily: 'Inter, sans-serif',
     textColor: '#FFFFFF',
     highlightColor: '#FFE600',

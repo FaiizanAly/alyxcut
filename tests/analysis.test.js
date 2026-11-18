@@ -72,5 +72,26 @@ if (!hasOverlap) {
   failed++;
 }
 
+// Test 4: Check that generated clips strictly obey the 90-second maximum duration
+const longMockChunks = [
+  { id: 1, text: 'Part 1', hinglish: 'Part 1 intro', start: 0, end: 30 },
+  { id: 2, text: 'Part 2', hinglish: 'Part 2 body', start: 30.5, end: 75 },
+  { id: 3, text: 'Part 3', hinglish: 'Part 3 continuation', start: 75.5, end: 110 },
+  { id: 4, text: 'Part 4', hinglish: 'Part 4 conclusion', start: 110.5, end: 150 },
+];
+const longGenerated = generateCandidateClips(longMockChunks, 150, {
+  targetDuration: 'auto',
+  clipCount: 'auto',
+});
+
+let exceedsMax = longGenerated.some(c => c.duration > 90);
+if (!exceedsMax && longGenerated.length > 0) {
+  console.log(`✅ [PASS] Duration limit test: No clip exceeds 90s max limit (All clips <= 90s).`);
+  passed++;
+} else {
+  console.error(`❌ [FAIL] Clip duration limit test failed. Found clip > 90s.`);
+  failed++;
+}
+
 console.log(`\nAnalysis Results: ${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);
