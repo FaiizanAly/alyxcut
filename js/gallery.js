@@ -163,16 +163,20 @@ export async function downloadAllClipsAsZip(clips, projectName = 'AlyxCut', onPr
     throw new Error('No clips available to package into ZIP.');
   }
 
-  // Load JSZip from window or vendor
+  // Load JSZip from package, window, or fallback
   let JSZip = window.JSZip;
   if (!JSZip) {
     try {
-      const module = await import('../vendor/jszip.min.js');
-      JSZip = window.JSZip || module.default;
+      const module = await import('jszip');
+      JSZip = module.default || module;
     } catch {
-      // CDN fallback
-      const cdnModule = await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
-      JSZip = cdnModule.default;
+      try {
+        const module = await import('../vendor/jszip.min.js');
+        JSZip = window.JSZip || module.default;
+      } catch {
+        const cdnModule = await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
+        JSZip = cdnModule.default;
+      }
     }
   }
 

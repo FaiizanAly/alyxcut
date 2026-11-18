@@ -19,6 +19,14 @@ export default defineConfig({
     format: 'es',
   },
   optimizeDeps: {
-    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util', 'onnxruntime-node'],
+  },
+  resolve: {
+    alias: {
+      'onnxruntime-node': false,
+    },
+  },
+  build: {
+    target: 'esnext',
   },
 });
