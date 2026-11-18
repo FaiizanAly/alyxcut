@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "Free AI-powered video clipping tool that automatically converts long videos into Instagram Reels and YouTube Shorts with local AI and Hinglish captions.",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
-    "dev": "node dev-server.js",
-    "start": "node dev-server.js",
-    "build": "node build.js",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "node tests/transliterate.test.js && node tests/analysis.test.js && node tests/upload.test.js"
   },
   "keywords": [
@@ -21,11 +24,17 @@
   ],
   "author": "AlyxFai",
   "license": "MIT",
+  "overrides": {
+    "onnxruntime-node": "npm:empty-npm-package@1.0.0"
+  },
   "dependencies": {
     "@ffmpeg/core": "^0.12.6",
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@ffmpeg/util": "^0.12.1",
     "@huggingface/transformers": "^3.3.3",
     "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "vite": "^5.4.11"
   }
 }

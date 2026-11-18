@@ -30,19 +30,25 @@ async function loadTransformers() {
     return window.transformers;
   }
 
-  // Try local vendor first, fallback to CDN
+  // Try package import first, then vendor, then CDN fallback
   try {
-    const module = await import('../vendor/transformers.web.min.js');
+    const module = await import('@huggingface/transformers');
     window.transformers = module;
     return module;
-  } catch (err) {
-    console.warn('Loading Transformers.js from vendor failed, trying CDN fallback...', err);
+  } catch {
     try {
-      const module = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3');
+      const module = await import('../vendor/transformers.web.min.js');
       window.transformers = module;
       return module;
-    } catch (cdnErr) {
-      throw new Error(`Failed to load Transformers.js AI engine: ${cdnErr.message}`);
+    } catch (err) {
+      console.warn('Loading Transformers.js from vendor failed, trying CDN fallback...', err);
+      try {
+        const module = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3');
+        window.transformers = module;
+        return module;
+      } catch (cdnErr) {
+        throw new Error(`Failed to load Transformers.js AI engine: ${cdnErr.message}`);
+      }
     }
   }
 }
