@@ -1,7 +1,7 @@
 // AlyxCut Main Application Controller
 // Orchestrates navigation, video upload, 10-stage AI processing pipeline, and storage
 
-import { validateVideoFile, loadVideoMetadata, formatDuration, formatBytes } from './upload.js';
+import { validateVideoFile, readVideoFileEagerly, loadVideoMetadata, formatDuration, formatBytes } from './upload.js';
 import { extractAudioFromVideo } from './audio-extractor.js';
 import { transcribeAudio } from './speech-recognition.js';
 import { sampleVideoFrames, generateCandidateClips } from './analysis.js';
@@ -11,10 +11,13 @@ import { openClipEditor, closeClipEditor, reRenderCurrentClip } from './clip-edi
 import { getSettings, saveSettings, saveProject, getAllProjects, deleteProject } from './storage.js';
 import { loadSettingsIntoUI, saveSettingsFromUI, preDownloadWhisperModel, clearCachedModels, clearAllLocalProjects } from './settings.js';
 
-// Application State
+// Application State - uses in-memory videoBytes and videoBlob to eliminate NotReadableError
 const state = {
   currentView: 'dashboard',
   uploadedFile: null,
+  videoBytes: null,        // in-memory Uint8Array
+  videoBlob: null,         // in-memory Blob
+  videoBlobUrl: null,      // ObjectURL for preview and canvas rendering
   videoMeta: null,
   currentProject: null,
   generatedClips: [],
@@ -150,6 +153,7 @@ async function handleFileSelected(file) {
   const validation = validateVideoFile(file);
   const errorEl = document.getElementById('upload-error-msg');
   const warningEl = document.getElementById('upload-warning-msg');
+  const dropPrompt = document.getElementById('drop-prompt');
 
   if (errorEl) errorEl.textContent = '';
   if (warningEl) warningEl.textContent = '';
@@ -163,14 +167,29 @@ async function handleFileSelected(file) {
     warningEl.textContent = validation.warning;
   }
 
-  state.uploadedFile = file;
-
-  const previewVideo = document.getElementById('source-preview-video');
-  const metaContainer = document.getElementById('video-metadata-card');
-  const dropPrompt = document.getElementById('drop-prompt');
+  // Provide immediate visual feedback while reading bytes
+  if (dropPrompt) {
+    dropPrompt.innerHTML = `
+      <div class="drop-icon">⏳</div>
+      <h3>Buffering video into memory...</h3>
+      <p style="font-size: 12px; color: var(--text-secondary);">Reading bytes to guarantee local browser access.</p>
+    `;
+  }
 
   try {
-    const meta = await loadVideoMetadata(file, previewVideo);
+    // Eagerly read file into memory (Uint8Array and in-memory Blob)
+    const eagerData = await readVideoFileEagerly(file);
+    state.uploadedFile = { name: eagerData.name, size: eagerData.size, type: eagerData.type };
+    state.videoBytes = eagerData.bytes;
+    state.videoBlob = eagerData.inMemoryBlob;
+
+    if (state.videoBlobUrl) {
+      URL.revokeObjectURL(state.videoBlobUrl);
+    }
+    state.videoBlobUrl = URL.createObjectURL(eagerData.inMemoryBlob);
+
+    const previewVideo = document.getElementById('source-preview-video');
+    const meta = await loadVideoMetadata(eagerData.inMemoryBlob, eagerData.name, previewVideo);
     state.videoMeta = meta;
 
     // Display metadata
@@ -180,6 +199,7 @@ async function handleFileSelected(file) {
     document.getElementById('meta-resolution').textContent = meta.resolution;
     document.getElementById('meta-aspect').textContent = meta.aspectRatio;
 
+    const metaContainer = document.getElementById('video-metadata-card');
     if (dropPrompt) dropPrompt.classList.add('hidden');
     if (metaContainer) metaContainer.classList.remove('hidden');
 
@@ -192,7 +212,13 @@ async function handleFileSelected(file) {
 }
 
 function resetUpload() {
+  if (state.videoBlobUrl) {
+    URL.revokeObjectURL(state.videoBlobUrl);
+    state.videoBlobUrl = null;
+  }
   state.uploadedFile = null;
+  state.videoBytes = null;
+  state.videoBlob = null;
   state.videoMeta = null;
 
   const previewVideo = document.getElementById('source-preview-video');
@@ -206,7 +232,21 @@ function resetUpload() {
   const generateBtn = document.getElementById('btn-start-analysis');
   const fileInput = document.getElementById('video-file-input');
 
-  if (dropPrompt) dropPrompt.classList.remove('hidden');
+  if (dropPrompt) {
+    dropPrompt.innerHTML = `
+      <div class="drop-icon">📹</div>
+      <h3>Drag and Drop Offline Video Here</h3>
+      <p>or click to browse your computer files</p>
+      <div class="format-tags">
+        <span class="format-pill">MP4</span>
+        <span class="format-pill">MOV</span>
+        <span class="format-pill">WEBM</span>
+        <span class="format-pill">MKV</span>
+        <span class="format-pill">AVI</span>
+      </div>
+    `;
+    dropPrompt.classList.remove('hidden');
+  }
   if (metaContainer) metaContainer.classList.add('hidden');
   if (generateBtn) generateBtn.disabled = true;
   if (fileInput) fileInput.value = '';
@@ -268,14 +308,15 @@ async function startProcessingPipeline() {
 
   try {
     // ----------------- STAGE 1: Reading Video -----------------
-    setProcessingStage(1, 'Reading video container and checking streams...', 5);
+    setProcessingStage(1, 'Accessing in-memory video stream...', 5);
     checkCancellation();
 
     // ----------------- STAGE 2: Extracting Audio -----------------
     setProcessingStage(2, 'Extracting 16kHz audio stream via Web Audio API...', 15);
     checkCancellation();
 
-    const audioResult = await extractAudioFromVideo(state.uploadedFile, (p) => {
+    const audioSource = state.videoBytes || state.videoBlob;
+    const audioResult = await extractAudioFromVideo(audioSource, (p) => {
       setProcessingProgress(Math.round(15 + p.percent * 0.15), p.message);
     });
     checkCancellation();

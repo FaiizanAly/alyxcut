@@ -170,8 +170,48 @@ export async function saveProject(project) {
     const db = await openDB();
     if (!db) return project;
 
+    // Sanitize project to ensure 100% serializable lightweight metadata
+    // Eliminates any raw File handles, DOM elements, or detached buffers in IndexedDB
+    const cleanMeta = project.videoMeta ? {
+      name: project.videoMeta.name || 'video.mp4',
+      sizeBytes: project.videoMeta.sizeBytes || 0,
+      sizeFormatted: project.videoMeta.sizeFormatted || '0 MB',
+      durationSec: project.videoMeta.durationSec || 0,
+      durationFormatted: project.videoMeta.durationFormatted || '00:00',
+      width: project.videoMeta.width || 1920,
+      height: project.videoMeta.height || 1080,
+      resolution: project.videoMeta.resolution || '1920 × 1080',
+      aspectRatio: project.videoMeta.aspectRatio || '16:9',
+      type: project.videoMeta.type || 'video/mp4',
+    } : null;
+
+    const cleanClips = (project.clips || []).map((c) => ({
+      id: c.id,
+      title: c.title,
+      startTime: c.startTime,
+      endTime: c.endTime,
+      duration: c.duration,
+      score: c.score,
+      badges: c.badges || [],
+      breakdown: c.breakdown || {},
+      focalX: c.focalX || 0.5,
+      chunks: c.chunks || [],
+      cropMode: c.cropMode || 'blur',
+      captionLanguage: c.captionLanguage || 'hinglish',
+      platform: c.platform || 'reels',
+      format: c.format || 'mp4',
+    }));
+
     const data = {
-      ...project,
+      id: project.id || `proj_${Date.now()}`,
+      name: project.name || cleanMeta?.name || 'Project',
+      videoMeta: cleanMeta,
+      transcript: project.transcript ? {
+        fullText: project.transcript.fullText || '',
+        hinglishText: project.transcript.hinglishText || '',
+        chunks: project.transcript.chunks || [],
+      } : null,
+      clips: cleanClips,
       updatedAt: new Date().toISOString(),
       createdAt: project.createdAt || new Date().toISOString(),
     };
