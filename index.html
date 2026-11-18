@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlyxCut — Automatic AI Reels & Shorts Generator | AlyxFai</title>
+  <meta name="description" content="Free AI-powered video clipping tool. Automatically analyzes long videos, identifies best moments, and generates Instagram Reels and YouTube Shorts with Hinglish captions locally.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="brand-badge">
+          <div class="brand-icon">⚡</div>
+          <div class="brand-info">
+            <h1>AlyxCut</h1>
+            <p>An AlyxFai Product</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-view="dashboard" id="nav-dashboard">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-item" data-view="create" id="nav-create">
+          <span class="nav-icon">✂️</span>
+          <span>Create Clips</span>
+        </a>
+        <a class="nav-item" data-view="projects" id="nav-projects">
+          <span class="nav-icon">🎬</span>
+          <span>My Projects</span>
+        </a>
+        <a class="nav-item" data-view="settings" id="nav-settings">
+          <span class="nav-icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+        <a class="nav-item" data-view="about" id="nav-about">
+          <span class="nav-icon">ℹ️</span>
+          <span>About AlyxCut</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="hardware-pill">
+          <span class="pulse-dot"></span>
+          <span>Local AI Active (Private)</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+      
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="top-bar-title">
+          <h2>Long Videos. Smart Clips. Automatically.</h2>
+        </div>
+        <div class="top-bar-actions">
+          <span class="tagline-badge">100% Client-Side • Zero Cost</span>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+
+        <!-- ================= VIEW 1: DASHBOARD ================= -->
+        <section class="view-panel active" id="view-dashboard">
+          <div class="hero-card">
+            <div class="hero-content">
+              <h2>Turn Long Videos Into Viral Reels & Shorts</h2>
+              <p>
+                AlyxCut uses browser-based Whisper AI and computer vision to analyze your videos locally, identify high-engagement moments, add synchronized Hinglish captions, and render vertical 9:16 clips for Instagram and YouTube.
+              </p>
+              <div class="hero-actions">
+                <button class="btn-primary" id="btn-dashboard-create">
+                  <span>⚡ Create New Clips</span>
+                </button>
+                <button class="btn-secondary" onclick="document.getElementById('nav-about').click()">
+                  <span>Learn How It Works</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Cards -->
+          <div class="features-grid">
+            <div class="feature-box">
+              <div class="feature-icon">🤖</div>
+              <h3>Multilingual Whisper AI</h3>
+              <p>Recognizes spoken speech with local Whisper AI. Generates default Hinglish (Roman Hindi), Hindi, and English captions with zero API costs.</p>
+            </div>
+            <div class="feature-box">
+              <div class="feature-icon">🎯</div>
+              <h3>Smart Moment Detection</h3>
+              <p>Analyzes opening hooks, speech density, and scene transitions to find complete thoughts and interesting stories.</p>
+            </div>
+            <div class="feature-box">
+              <div class="feature-icon">📱</div>
+              <h3>9:16 Vertical Video</h3>
+              <p>Intelligently converts horizontal footage into vertical 9:16 Reels and Shorts with blurred background or smart face cropping.</p>
+            </div>
+            <div class="feature-box">
+              <div class="feature-icon">🔒</div>
+              <h3>100% Local & Private</h3>
+              <p>Your video never leaves your computer. All speech recognition and video processing happens entirely in your desktop browser.</p>
+            </div>
+          </div>
+
+          <!-- Recent Projects on Dashboard -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3>Recent Projects</h3>
+              <button class="btn-secondary" onclick="document.getElementById('nav-projects').click()" style="padding: 6px 12px; font-size: 12px;">View All</button>
+            </div>
+            <div class="recent-projects-list" id="dashboard-recent-projects">
+              <p class="text-muted">Loading projects...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW 2: CREATE CLIPS ================= -->
+        <section class="view-panel" id="view-create">
+          
+          <!-- Upload Card -->
+          <div class="upload-card">
+            <input type="file" id="video-file-input" accept="video/mp4,video/quicktime,video/webm,video/x-matroska,video/x-msvideo,.mp4,.mov,.webm,.mkv,.avi" style="display: none;">
+            
+            <div class="drop-zone" id="drop-zone">
+              <div class="drop-prompt" id="drop-prompt">
+                <div class="drop-icon">📹</div>
+                <h3>Drag and Drop Offline Video Here</h3>
+                <p>or click to browse your computer files</p>
+                <div class="format-tags">
+                  <span class="format-pill">MP4</span>
+                  <span class="format-pill">MOV</span>
+                  <span class="format-pill">WEBM</span>
+                  <span class="format-pill">MKV</span>
+                  <span class="format-pill">AVI</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Video Metadata Card (Shown after selection) -->
+            <div class="video-metadata-card hidden" id="video-metadata-card">
+              <div class="video-thumb-preview">
+                <video id="source-preview-video" class="source-preview-video" controls playsinline></video>
+              </div>
+              <div class="meta-details">
+                <h4 id="meta-filename">video.mp4</h4>
+                <div class="meta-grid">
+                  <div class="meta-item">
+                    <span class="meta-label">Duration</span>
+                    <span class="meta-val" id="meta-duration">00:00</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">File Size</span>
+                    <span class="meta-val" id="meta-filesize">0 MB</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">Resolution</span>
+                    <span class="meta-val" id="meta-resolution">1920 × 1080</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">Aspect Ratio</span>
+                    <span class="meta-val" id="meta-aspect">16:9</span>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                  <button class="btn-secondary" id="btn-replace-video" onclick="document.getElementById('video-file-input').click()" style="padding: 6px 12px; font-size: 12px;">Replace Video</button>
+                  <button class="btn-secondary" id="btn-remove-video" style="padding: 6px 12px; font-size: 12px; color: #ef4444;">Remove</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="upload-feedback">
+              <p class="error-text" id="upload-error-msg"></p>
+              <p class="warning-text" id="upload-warning-msg"></p>
+            </div>
+          </div>
+
+          <!-- Generation Configuration Options -->
+          <div class="options-card">
+            <h3>Generation Preferences</h3>
+            <div class="options-grid">
+              
+              <div class="form-group">
+                <label for="setting-caption-lang">Caption Language</label>
+                <select class="form-select" id="setting-caption-lang">
+                  <option value="hinglish" selected>Hinglish (Roman Hindi) — Default</option>
+                  <option value="hindi">Hindi (Devanagari)</option>
+                  <option value="english">English</option>
+                </select>
+                <span class="form-hint">Whisper transliterates Hindi to phonetic Roman Hindi</span>
+              </div>
+
+              <div class="form-group">
+                <label for="setting-clip-dur">Clip Duration</label>
+                <select class="form-select" id="setting-clip-dur">
+                  <option value="auto" selected>Automatic (AI selects best length)</option>
+                  <option value="15">15 Seconds (Quick Hook)</option>
+                  <option value="30">30 Seconds (Standard Reel)</option>
+                  <option value="45">45 Seconds (Deep Dive)</option>
+                  <option value="60">60 Seconds (Full Short)</option>
+                </select>
+                <span class="form-hint">Clips snap to natural sentence boundaries</span>
+              </div>
+
+              <div class="form-group">
+                <label for="setting-clip-count">Number of Clips</label>
+                <select class="form-select" id="setting-clip-count">
+                  <option value="auto" selected>Automatic (Only high-quality clips)</option>
+                  <option value="5">5 Clips</option>
+                  <option value="10">10 Clips</option>
+                  <option value="15">15 Clips</option>
+                </select>
+                <span class="form-hint">AI rejects boring moments and dead silence</span>
+              </div>
+
+              <div class="form-group">
+                <label for="setting-platform">Export Preset</label>
+                <select class="form-select" id="setting-platform">
+                  <option value="reels" selected>Instagram Reels (9:16 Vertical MP4)</option>
+                  <option value="shorts">YouTube Shorts (9:16 Vertical MP4)</option>
+                </select>
+                <span class="form-hint">Standard vertical 9:16 compatible formats</span>
+              </div>
+
+              <div class="form-group">
+                <label for="setting-crop-mode">Crop & Background Style</label>
+                <select class="form-select" id="setting-crop-mode">
+                  <option value="blur" selected>Blurred Background 9:16 (Recommended)</option>
+                  <option value="center">Smart Center / Face Crop 9:16</option>
+                  <option value="fit">Fit with Letterbox Borders</option>
+                </select>
+                <span class="form-hint">Prevents unnatural video stretching</span>
+              </div>
+
+            </div>
+
+            <div class="action-row">
+              <button class="btn-primary" id="btn-start-analysis" disabled>
+                <span>⚡ Generate Smart Clips</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Generated Clips Gallery Section -->
+          <div class="gallery-section hidden" id="generated-gallery-section">
+            <div class="gallery-header">
+              <div>
+                <h3 id="gallery-clip-count">Generated Clips</h3>
+                <p class="text-muted" style="font-size: 13px;">Preview, edit captions, or download clips individually or as a ZIP package.</p>
+              </div>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <span id="zip-status-indicator" style="font-size: 12px; color: var(--text-secondary);"></span>
+                <button class="btn-primary" id="btn-download-all-zip">
+                  <span>📦 Download All (ZIP)</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="clips-gallery-grid" id="clips-gallery-grid">
+              <!-- Rendered dynamically by js/gallery.js -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ================= VIEW 3: MY PROJECTS ================= -->
+        <section class="view-panel" id="view-projects">
+          <div class="dashboard-card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <h3>Saved Local Projects</h3>
+              <button class="btn-secondary" onclick="document.getElementById('nav-create').click()" style="padding: 6px 12px; font-size: 12px;">+ New Project</button>
+            </div>
+            <p class="text-muted" style="font-size: 13px; margin-bottom: 20px;">
+              Projects are stored locally in your browser's IndexedDB. They remain private on your computer.
+            </p>
+            <div class="projects-list-container" id="projects-list-container">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW 4: SETTINGS ================= -->
+        <section class="view-panel" id="view-settings">
+          
+          <!-- General Preferences -->
+          <div class="settings-section-card">
+            <h3>Caption Appearance Defaults</h3>
+            <p class="section-sub">Customize how burned captions appear on exported vertical videos.</p>
+            
+            <div class="options-grid">
+              <div class="form-group">
+                <label for="setting-font-size">Font Size (px)</label>
+                <input type="number" class="form-input" id="setting-font-size" value="28" min="18" max="44">
+              </div>
+
+              <div class="form-group">
+                <label for="setting-caption-pos">Caption Position</label>
+                <select class="form-select" id="setting-caption-pos">
+                  <option value="bottom" selected>Bottom (Standard Reels / Shorts)</option>
+                  <option value="center">Center / Middle</option>
+                  <option value="top">Top</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="justify-content: center;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="setting-bold-captions" checked>
+                  <span>Bold High-Visibility Typography</span>
+                </label>
+              </div>
+
+              <div class="form-group" style="justify-content: center;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="setting-highlight-words" checked>
+                  <span>Karaoke Active Word Highlighting</span>
+                </label>
+              </div>
+            </div>
+
+            <button class="btn-secondary" id="btn-save-settings">Save Preference Defaults</button>
+          </div>
+
+          <!-- AI Model Management -->
+          <div class="settings-section-card">
+            <h3>Local Whisper AI Model</h3>
+            <p class="section-sub">AlyxCut uses Transformers.js to execute Whisper locally via WebGPU/WASM.</p>
+            
+            <table class="diag-table" style="margin-bottom: 20px;">
+              <tr>
+                <td>Model Status:</td>
+                <td id="model-status-text">Ready for on-demand use (Auto-downloads upon first video analysis)</td>
+              </tr>
+              <tr>
+                <td>Model Variant:</td>
+                <td>onnx-community/whisper-tiny (~40 MB quantized multilingual)</td>
+              </tr>
+              <tr>
+                <td>Speech Languages:</td>
+                <td>Hindi, English, Mixed Hindi-English (90+ languages supported)</td>
+              </tr>
+            </table>
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="btn-secondary" id="btn-predownload-model">⬇️ Pre-Download Whisper Model Now</button>
+              <button class="btn-secondary" id="btn-clear-model-cache" style="color: #ef4444;">Clear Cached Models</button>
+            </div>
+          </div>
+
+          <!-- Hardware & Storage Diagnostics -->
+          <div class="settings-section-card">
+            <h3>System & Hardware Diagnostics</h3>
+            <p class="section-sub">Diagnostic status of your browser's local acceleration capabilities.</p>
+            
+            <table class="diag-table" style="margin-bottom: 20px;">
+              <tr>
+                <td>WebGPU Acceleration:</td>
+                <td id="diag-webgpu" class="diag-status">Checking...</td>
+              </tr>
+              <tr>
+                <td>SharedArrayBuffer (COOP/COEP):</td>
+                <td id="diag-sab" class="diag-status">Checking...</td>
+              </tr>
+              <tr>
+                <td>CPU Hardware Concurrency:</td>
+                <td id="diag-cores">Checking...</td>
+              </tr>
+              <tr>
+                <td>Device Memory (Estimate):</td>
+                <td id="diag-memory">Checking...</td>
+              </tr>
+              <tr>
+                <td>IndexedDB Storage Usage:</td>
+                <td id="diag-storage-usage">Calculating...</td>
+              </tr>
+            </table>
+
+            <button class="btn-secondary" id="btn-clear-all-storage" style="color: #ef4444;">Clear All Local Saved Data</button>
+          </div>
+
+        </section>
+
+        <!-- ================= VIEW 5: ABOUT ALYXCUT ================= -->
+        <section class="view-panel" id="view-about">
+          <div class="hero-card">
+            <div class="hero-content">
+              <h2>About AlyxCut</h2>
+              <p>
+                <strong>AlyxCut</strong> is a next-generation AI video clipping tool from <strong>AlyxFai</strong> (makers of AlyxFiles).
+                Designed specifically for Windows creators and desktop browsers, AlyxCut transforms full-length videos into ready-to-publish vertical Instagram Reels and YouTube Shorts.
+              </p>
+            </div>
+          </div>
+
+          <div class="features-grid">
+            <div class="feature-box">
+              <div class="feature-icon">🛡️</div>
+              <h3>Privacy-First Architecture</h3>
+              <p>Unlike cloud video services that upload your private recordings to remote servers, AlyxCut executes all speech recognition, content analysis, and video rendering 100% locally on your machine.</p>
+            </div>
+            <div class="feature-box">
+              <div class="feature-icon">💎</div>
+              <h3>Zero API Costs</h3>
+              <p>No monthly subscriptions, no OpenAI tokens, and no hidden API bills. AlyxCut leverages open-source Whisper and WebAssembly to give you unlimited local generation.</p>
+            </div>
+            <div class="feature-box">
+              <div class="feature-icon">🇮🇳</div>
+              <h3>Native Hinglish Captions</h3>
+              <p>Built-in phonetic transliteration automatically converts Hindi speech into natural Roman Hindi (Hinglish), formatted with high-contrast burned subtitle typography.</p>
+            </div>
+            <div class="feature-box">
+              <div class="feature-icon">💻</div>
+              <h3>Hardware Compatibility</h3>
+              <p>Optimized for modern desktop browsers with WebGPU acceleration and automatic multi-threaded CPU/WASM fallback for broad compatibility across Windows devices.</p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= 10-STAGE PROCESSING OVERLAY MODAL ================= -->
+  <div class="processing-overlay" id="processing-overlay">
+    <div class="processing-box">
+      <div class="process-header">
+        <h3 id="process-stage-name">Reading Video</h3>
+        <span class="process-stage-badge" id="process-stage-num">Stage 1 of 10</span>
+      </div>
+
+      <!-- 10 Step Progress Pills -->
+      <div class="stages-step-container">
+        <div class="stage-step-item active" data-step="1"></div>
+        <div class="stage-step-item pending" data-step="2"></div>
+        <div class="stage-step-item pending" data-step="3"></div>
+        <div class="stage-step-item pending" data-step="4"></div>
+        <div class="stage-step-item pending" data-step="5"></div>
+        <div class="stage-step-item pending" data-step="6"></div>
+        <div class="stage-step-item pending" data-step="7"></div>
+        <div class="stage-step-item pending" data-step="8"></div>
+        <div class="stage-step-item pending" data-step="9"></div>
+        <div class="stage-step-item pending" data-step="10"></div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="process-progress-bar"></div>
+        </div>
+        <div class="progress-stats">
+          <span id="process-status-detail">Initializing video analyzer...</span>
+          <span id="process-percent-text">0%</span>
+        </div>
+        <div class="process-sub-msg" id="process-sub-status"></div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 24px;">
+        <button class="btn-secondary" id="btn-cancel-processing" style="color: #ef4444;">Cancel Processing</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CLIP EDITOR MODAL ================= -->
+  <div class="modal-overlay" id="clip-editor-modal">
+    <div class="editor-box">
+      <div class="editor-header">
+        <h3>Edit Clip & Captions</h3>
+        <button class="btn-close" id="btn-close-editor">&times;</button>
+      </div>
+
+      <div class="editor-body">
+        <!-- Left: Preview -->
+        <div class="editor-preview-pane">
+          <div class="editor-video-wrapper">
+            <video class="edit-preview-video" id="edit-preview-video" controls playsinline></video>
+          </div>
+          <span style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">9:16 Vertical Preview</span>
+        </div>
+
+        <!-- Right: Controls -->
+        <div class="editor-controls-pane">
+          <div class="form-group">
+            <label for="edit-clip-title">Clip Title</label>
+            <input type="text" class="form-input" id="edit-clip-title" value="">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="edit-clip-start">Start Time (sec)</label>
+              <input type="number" class="form-input" id="edit-clip-start" step="0.5">
+            </div>
+            <div class="form-group">
+              <label for="edit-clip-end">End Time (sec)</label>
+              <input type="number" class="form-input" id="edit-clip-end" step="0.5">
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+            <span>Selected Duration: <strong id="edit-clip-duration" style="color: var(--text-primary);">00:00</strong></span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="edit-clip-crop">Crop & Layout</label>
+              <select class="form-select" id="edit-clip-crop">
+                <option value="blur">Blurred Background 9:16</option>
+                <option value="center">Smart Center Crop 9:16</option>
+                <option value="fit">Fit with Borders</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-clip-lang">Caption Language</label>
+              <select class="form-select" id="edit-clip-lang">
+                <option value="hinglish">Hinglish (Roman Hindi)</option>
+                <option value="hindi">Hindi (Devanagari)</option>
+                <option value="english">English</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="edit-font-size">Caption Size (px)</label>
+              <input type="number" class="form-input" id="edit-font-size" value="28" min="18" max="44">
+            </div>
+
+            <div class="form-group">
+              <label for="edit-caption-pos">Caption Position</label>
+              <select class="form-select" id="edit-caption-pos">
+                <option value="bottom">Bottom</option>
+                <option value="center">Center</option>
+                <option value="top">Top</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-clip-captions">Caption Text & Timestamp Segments</label>
+            <textarea class="form-textarea" id="edit-clip-captions" rows="4"></textarea>
+            <span class="form-hint">Edit any word to correct transliteration before burning.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-footer">
+        <span id="edit-render-status" style="font-size: 13px; color: var(--text-secondary);"></span>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-secondary" onclick="document.getElementById('btn-close-editor').click()">Cancel</button>
+          <button class="btn-primary" id="btn-rerender-clip">Re-render & Save Clip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor Libraries & Main Application Script -->
+  <script src="vendor/jszip.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

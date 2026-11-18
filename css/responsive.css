@@ -1,0 +1,98 @@
+/* AlyxCut Responsive Adjustments */
+
+@media (max-width: 1024px) {
+  .app-sidebar {
+    width: 220px;
+  }
+  
+  .content-wrapper {
+    padding: 24px 20px;
+  }
+  
+  .editor-body {
+    grid-template-columns: 1fr;
+  }
+  
+  .editor-preview-pane {
+    max-width: 240px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .app-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .sidebar-header {
+    padding: 16px;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  .nav-item {
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .content-wrapper {
+    padding: 16px;
+  }
+
+  .hero-card {
+    padding: 24px;
+  }
+
+  .hero-content h2 {
+    font-size: 22px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .video-metadata-card {
+    flex-direction: column;
+  }
+
+  .video-thumb-preview {
+    width: 100%;
+    height: 180px;
+  }
+
+  .options-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .clips-gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-row-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .proj-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
