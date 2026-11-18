@@ -66,7 +66,10 @@ export async function sampleVideoFrames(videoElement, sampleIntervalSec = 2, onP
   const visualData = [];
   let previousFrameData = null;
 
-  const totalSamples = Math.floor(duration / sampleIntervalSec);
+  // Non-blocking sampling: Cap at max 35 sample frames across any video length (at least 2.5s apart)
+  const maxSamples = 35;
+  const effectiveInterval = Math.max(2.5, duration / maxSamples);
+  const totalSamples = Math.ceil(duration / effectiveInterval);
   let sampleCount = 0;
 
   // Check if native FaceDetector is available in this browser
@@ -79,12 +82,15 @@ export async function sampleVideoFrames(videoElement, sampleIntervalSec = 2, onP
     }
   }
 
-  for (let time = 0; time < duration; time += sampleIntervalSec) {
+  for (let time = 0; time < duration; time += effectiveInterval) {
     sampleCount++;
     if (onProgress && totalSamples > 0) {
       const pct = Math.min(100, Math.round((sampleCount / totalSamples) * 100));
       onProgress({ percent: pct, message: `Analyzing visual frames (${sampleCount}/${totalSamples})...` });
     }
+
+    // Yield execution to the browser main thread to guarantee 60fps UI responsiveness
+    await new Promise((resolve) => setTimeout(resolve, 16));
 
     // Seek video to sample time
     await seekVideo(videoElement, time);

@@ -70,4 +70,10 @@ if (fs.existsSync(path.join(__dirname, 'assets'))) {
   console.log('✅ Copied assets/');
 }
 
+// 7. Copy workers
+if (fs.existsSync(path.join(__dirname, 'workers'))) {
+  copyDirRecursive(path.join(__dirname, 'workers'), path.join(DIST_DIR, 'workers'));
+  console.log('✅ Copied workers/');
+}
+
 console.log('\n🎉 Production build complete! All files generated in dist/');

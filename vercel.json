@@ -16,7 +16,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!assets/|vendor/|css/|js/|.*\\..*).*)",
+      "source": "/((?!assets/|vendor/|workers/|css/|js/|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]

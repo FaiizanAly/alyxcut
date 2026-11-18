@@ -1,7 +1,7 @@
 // AlyxCut Main Application Controller
 // Orchestrates navigation, video upload, 10-stage AI processing pipeline, and storage
 
-import { validateVideoFile, readVideoFileEagerly, loadVideoMetadata, formatDuration, formatBytes } from './upload.js';
+import { validateVideoFile, loadVideoMetadata, formatDuration, formatBytes } from './upload.js';
 import { extractAudioFromVideo } from './audio-extractor.js';
 import { transcribeAudio } from './speech-recognition.js';
 import { sampleVideoFrames, generateCandidateClips } from './analysis.js';
@@ -11,12 +11,10 @@ import { openClipEditor, closeClipEditor, reRenderCurrentClip } from './clip-edi
 import { getSettings, saveSettings, saveProject, getAllProjects, deleteProject } from './storage.js';
 import { loadSettingsIntoUI, saveSettingsFromUI, preDownloadWhisperModel, clearCachedModels, clearAllLocalProjects } from './settings.js';
 
-// Application State - uses in-memory videoBytes and videoBlob to eliminate NotReadableError
+// Application State - lightweight, zero-copy, non-blocking
 const state = {
   currentView: 'dashboard',
-  uploadedFile: null,
-  videoBytes: null,        // in-memory Uint8Array
-  videoBlob: null,         // in-memory Blob
+  uploadedFile: null,      // Native File/Blob handle (streamed, not cloned in RAM)
   videoBlobUrl: null,      // ObjectURL for preview and canvas rendering
   videoMeta: null,
   currentProject: null,
@@ -167,30 +165,17 @@ async function handleFileSelected(file) {
     warningEl.textContent = validation.warning;
   }
 
-  // Provide immediate visual feedback while reading bytes
-  if (dropPrompt) {
-    dropPrompt.innerHTML = `
-      <div class="drop-icon">⏳</div>
-      <h3>Buffering video into memory...</h3>
-      <p style="font-size: 12px; color: var(--text-secondary);">Reading bytes to guarantee local browser access.</p>
-    `;
-  }
-
   try {
-    // Eagerly read file into memory (Uint8Array and in-memory Blob)
-    const eagerData = await readVideoFileEagerly(file);
-    state.uploadedFile = { name: eagerData.name, size: eagerData.size, type: eagerData.type };
-    state.videoBytes = eagerData.bytes;
-    state.videoBlob = eagerData.inMemoryBlob;
-
-    if (state.videoBlobUrl) {
-      URL.revokeObjectURL(state.videoBlobUrl);
-    }
-    state.videoBlobUrl = URL.createObjectURL(eagerData.inMemoryBlob);
+    state.uploadedFile = file;
 
     const previewVideo = document.getElementById('source-preview-video');
-    const meta = await loadVideoMetadata(eagerData.inMemoryBlob, eagerData.name, previewVideo);
+    const meta = await loadVideoMetadata(file, previewVideo);
     state.videoMeta = meta;
+
+    if (state.videoBlobUrl && state.videoBlobUrl !== meta.objectUrl) {
+      URL.revokeObjectURL(state.videoBlobUrl);
+    }
+    state.videoBlobUrl = meta.objectUrl;
 
     // Display metadata
     document.getElementById('meta-filename').textContent = meta.name;
@@ -217,8 +202,6 @@ function resetUpload() {
     state.videoBlobUrl = null;
   }
   state.uploadedFile = null;
-  state.videoBytes = null;
-  state.videoBlob = null;
   state.videoMeta = null;
 
   const previewVideo = document.getElementById('source-preview-video');
@@ -308,25 +291,24 @@ async function startProcessingPipeline() {
 
   try {
     // ----------------- STAGE 1: Reading Video -----------------
-    setProcessingStage(1, 'Accessing in-memory video stream...', 5);
+    setProcessingStage(1, 'Accessing video stream...', 5);
     checkCancellation();
 
     // ----------------- STAGE 2: Extracting Audio -----------------
-    setProcessingStage(2, 'Extracting 16kHz audio stream via Web Audio API...', 15);
+    setProcessingStage(2, 'Extracting 16kHz audio stream via background streaming...', 15);
     checkCancellation();
 
-    const audioSource = state.videoBytes || state.videoBlob;
-    const audioResult = await extractAudioFromVideo(audioSource, (p) => {
+    const audioResult = await extractAudioFromVideo(state.uploadedFile, (p) => {
       setProcessingProgress(Math.round(15 + p.percent * 0.15), p.message);
     });
     checkCancellation();
 
     // ----------------- STAGE 3: Loading AI Model -----------------
-    setProcessingStage(3, 'Loading local Whisper AI speech recognition model...', 30);
+    setProcessingStage(3, 'Loading quantized Whisper AI model in dedicated worker...', 30);
     checkCancellation();
 
     // ----------------- STAGE 4: Transcribing Speech -----------------
-    setProcessingStage(4, 'Transcribing spoken audio into timestamped speech chunks...', 40);
+    setProcessingStage(4, 'Transcribing spoken audio in background worker...', 40);
     checkCancellation();
 
     const transcriptResult = await transcribeAudio(audioResult.audioData, {
