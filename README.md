@@ -19,6 +19,8 @@ Unlike expensive cloud services that require monthly subscriptions and upload yo
 Using browser-accelerated **Whisper AI** and lightweight computer vision, AlyxCut analyzes spoken dialogue, detects opening hooks and emotional peaks, eliminates dead silence, generates synchronized **Hinglish (Roman Hindi)** captions, and renders vertical 9:16 clips with blurred background or smart face cropping.
 
 ---
+[Visit alyxcut LIVE SITE](https://alyxcut-swart.vercel.app/)
+---
 
 ## ✨ Key Features
 
