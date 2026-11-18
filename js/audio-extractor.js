@@ -1,6 +1,7 @@
 // AlyxCut Audio Extractor
 // Extracts 16,000 Hz Mono Float32Array PCM audio required by Whisper models
 // Uses high-speed native Web Audio API with FFmpeg.wasm fallback
+// Fully supports in-memory ArrayBuffer / Uint8Array to eliminate NotReadableError
 
 /**
  * Resamples an AudioBuffer to 16kHz mono Float32Array
@@ -30,15 +31,24 @@ async function resampleTo16kHz(audioBuffer) {
 }
 
 /**
- * Extracts 16kHz mono audio from a video File using Web Audio API
- * @param {File} videoFile - Uploaded video file
+ * Extracts 16kHz mono audio from in-memory ArrayBuffer, Uint8Array, Blob, or File
+ * @param {ArrayBuffer|Uint8Array|Blob|File} audioSource - Audio source in memory
  * @param {Function} [onProgress] - Optional progress callback
  * @returns {Promise<{ audioData: Float32Array, duration: number, sampleRate: number }>}
  */
-export async function extractAudioFromVideo(videoFile, onProgress = null) {
-  if (onProgress) onProgress({ stage: 'reading', percent: 10, message: 'Reading video file bytes...' });
+export async function extractAudioFromVideo(audioSource, onProgress = null) {
+  if (onProgress) onProgress({ stage: 'reading', percent: 10, message: 'Accessing in-memory audio stream...' });
 
-  const arrayBuffer = await videoFile.arrayBuffer();
+  let arrayBuffer;
+  if (audioSource instanceof ArrayBuffer) {
+    arrayBuffer = audioSource;
+  } else if (audioSource instanceof Uint8Array) {
+    arrayBuffer = audioSource.buffer;
+  } else if (audioSource && typeof audioSource.arrayBuffer === 'function') {
+    arrayBuffer = await audioSource.arrayBuffer();
+  } else {
+    throw new Error('Invalid audioSource provided to extractAudioFromVideo.');
+  }
 
   if (onProgress) onProgress({ stage: 'decoding', percent: 40, message: 'Decoding audio stream...' });
 
@@ -71,17 +81,27 @@ export async function extractAudioFromVideo(videoFile, onProgress = null) {
 /**
  * Fallback audio extractor using FFmpeg if Web Audio cannot decode the container/codec
  * @param {object} ffmpegInstance - Initialized FFmpeg instance
- * @param {File} videoFile - Video file
+ * @param {ArrayBuffer|Uint8Array|Blob|File} audioSource - Video audio source
  * @param {Function} [onProgress]
  * @returns {Promise<{ audioData: Float32Array, duration: number, sampleRate: number }>}
  */
-export async function extractAudioWithFFmpeg(ffmpegInstance, videoFile, onProgress = null) {
+export async function extractAudioWithFFmpeg(ffmpegInstance, audioSource, onProgress = null) {
   if (onProgress) onProgress({ stage: 'ffmpeg_extract', percent: 30, message: 'Extracting audio via FFmpeg...' });
 
   const inputName = 'input_' + Date.now() + '.tmp';
   const outputWav = 'audio_' + Date.now() + '.wav';
 
-  const buffer = new Uint8Array(await videoFile.arrayBuffer());
+  let buffer;
+  if (audioSource instanceof Uint8Array) {
+    buffer = audioSource;
+  } else if (audioSource instanceof ArrayBuffer) {
+    buffer = new Uint8Array(audioSource);
+  } else if (audioSource && typeof audioSource.arrayBuffer === 'function') {
+    buffer = new Uint8Array(await audioSource.arrayBuffer());
+  } else {
+    throw new Error('Invalid audioSource provided to extractAudioWithFFmpeg.');
+  }
+
   await ffmpegInstance.writeFile(inputName, buffer);
 
   // Extract 16kHz mono WAV PCM

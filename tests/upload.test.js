@@ -1,5 +1,5 @@
-// Automated Test for Upload Validation & Formatting
-import { validateVideoFile, formatBytes, formatDuration } from '../js/upload.js';
+// Automated Test for Upload Validation, Formatting & Eager File Reading
+import { validateVideoFile, formatBytes, formatDuration, readVideoFileEagerly } from '../js/upload.js';
 
 console.log('🧪 Running Video Upload & Validation Tests...\n');
 
@@ -38,6 +38,29 @@ if (res1.valid && !res2.valid && res3.valid && res3.warning) {
   passed++;
 } else {
   console.error('❌ [FAIL] validateVideoFile failed.');
+  failed++;
+}
+
+// Test 4: Eager reading of file bytes
+try {
+  const dummyBuffer = new Uint8Array([0, 1, 2, 3, 4]).buffer;
+  const mockFile = {
+    name: 'sample.mp4',
+    size: 5,
+    type: 'video/mp4',
+    arrayBuffer: async () => dummyBuffer,
+  };
+
+  const eagerRes = await readVideoFileEagerly(mockFile);
+  if (eagerRes.bytes instanceof Uint8Array && eagerRes.bytes.length === 5) {
+    console.log('✅ [PASS] readVideoFileEagerly returns buffered bytes and in-memory blob.');
+    passed++;
+  } else {
+    console.error('❌ [FAIL] readVideoFileEagerly returned invalid bytes.');
+    failed++;
+  }
+} catch (e) {
+  console.error('❌ [FAIL] readVideoFileEagerly threw:', e);
   failed++;
 }
 
